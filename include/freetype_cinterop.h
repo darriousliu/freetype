@@ -15,7 +15,7 @@ extern "C" {
 #endif
 
 typedef struct {
-    unsigned char *ptr;
+    char *ptr;
     int length;
 } UCharArray;
 
