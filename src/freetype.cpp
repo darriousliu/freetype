@@ -67,8 +67,6 @@ extern "C" bool loadMathTable(const long face, char *data, const int length) {
                                          TTAG_MATH, 0,
                                          reinterpret_cast<FT_Byte *>(data),
                                          &t_length);
-  printf("Load Math Table: %d\n", result);
-  printf(data);
   return result;
 }
 
