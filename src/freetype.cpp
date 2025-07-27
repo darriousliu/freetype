@@ -35,7 +35,7 @@ extern "C" int *libraryVersion(const long library) {
   return libraryVersion;
 }
 
-extern "C" long newMemoryFace(const long library, const char *data,
+extern "C" long newMemoryFace(const long library, char *data,
                               const int length, const long faceIndex) {
   if (library == 0 || data == nullptr || length <= 0) {
     // 输出原因
@@ -49,7 +49,7 @@ extern "C" long newMemoryFace(const long library, const char *data,
          header[3]);
 
   FT_Face face;
-  FT_Error error =
+  const FT_Error error =
       FT_New_Memory_Face(ftLibrary, header, length, faceIndex, &face);
 
   printf("FT_New_Memory_Face returned: %d\n", error);
@@ -89,7 +89,7 @@ long faceGetFaceIndex(const long face) {
 }
 
 char *faceGetFamilyName(const long face) {
-  auto familyName = reinterpret_cast<FT_Face>(face)->family_name;
+  const auto familyName = reinterpret_cast<FT_Face>(face)->family_name;
   return familyName;
 }
 
@@ -210,7 +210,7 @@ bool faceSetUnpatentedHinting(const long face, const bool value) {
 // Returns an array with [charcode, glyphIndex]
 unsigned long *getFirstChar(const long face) {
   FT_UInt gindex;
-  FT_ULong charcode = FT_Get_First_Char(reinterpret_cast<FT_Face>(face),
+  const FT_ULong charcode = FT_Get_First_Char(reinterpret_cast<FT_Face>(face),
                                         &gindex);
 
   const auto result = new unsigned long[2];
@@ -231,8 +231,7 @@ unsigned int getCharIndex(const long face, const int code) {
 }
 
 unsigned int getNameIndex(const long face, const char *name) {
-  const auto glyphIndex = FT_Get_Name_Index(reinterpret_cast<FT_Face>(face),
-                                            (char *)name);
+  const auto glyphIndex = FT_Get_Name_Index(reinterpret_cast<FT_Face>(face), name);
   return glyphIndex;
 }
 
@@ -315,15 +314,15 @@ long sizeMetricsGetYScale(const long sizeMetrics) {
   return reinterpret_cast<FT_Size_Metrics *>(sizeMetrics)->y_scale;
 }
 
-long glyphSlotGetLinearHoriAdvance(long glyphSlot) {
+long glyphSlotGetLinearHoriAdvance(const long glyphSlot) {
   return reinterpret_cast<FT_GlyphSlot>(glyphSlot)->linearHoriAdvance;
 }
 
-long glyphSlotGetLinearVertAdvance(long glyphSlot) {
+long glyphSlotGetLinearVertAdvance(const long glyphSlot) {
   return reinterpret_cast<FT_GlyphSlot>(glyphSlot)->linearVertAdvance;
 }
 
-long *glyphSlotGetAdvance(long glyphSlot) {
+long *glyphSlotGetAdvance(const long glyphSlot) {
   const auto advance = reinterpret_cast<FT_GlyphSlot>(glyphSlot)->advance;
   auto *result = new long[2];
   result[0] = advance.x;
@@ -331,98 +330,98 @@ long *glyphSlotGetAdvance(long glyphSlot) {
   return result;
 }
 
-int glyphSlotGetFormat(long glyphSlot) {
+int glyphSlotGetFormat(const long glyphSlot) {
   return reinterpret_cast<FT_GlyphSlot>(glyphSlot)->format;
 }
 
-int glyphSlotGetBitmapLeft(long glyphSlot) {
+int glyphSlotGetBitmapLeft(const long glyphSlot) {
   return reinterpret_cast<FT_GlyphSlot>(glyphSlot)->bitmap_left;
 }
 
-int glyphSlotGetBitmapTop(long glyphSlot) {
+int glyphSlotGetBitmapTop(const long glyphSlot) {
   return reinterpret_cast<FT_GlyphSlot>(glyphSlot)->bitmap_top;
 }
 
 // Pointer to FT_Bitmap
-long glyphSlotGetBitmap(long glyphSlot) {
+long glyphSlotGetBitmap(const long glyphSlot) {
   return reinterpret_cast<long>(&reinterpret_cast<FT_GlyphSlot>(glyphSlot)->
     bitmap);
 }
 
 // Pointer to FT_Glyph_Metrics
-long glyphSlotGetMetrics(long glyphSlot) {
+long glyphSlotGetMetrics(const long glyphSlot) {
   return reinterpret_cast<long>(&reinterpret_cast<FT_GlyphSlot>(glyphSlot)->
     metrics);
 }
 
-bool renderGlyph(long glyphSlot, int renderMode) {
+bool renderGlyph(const long glyphSlot, int renderMode) {
   return FT_Render_Glyph(reinterpret_cast<FT_GlyphSlot>(glyphSlot),
                          static_cast<FT_Render_Mode>(renderMode));
 }
 
-long glyphMetricsGetWidth(long glyphMetrics) {
+long glyphMetricsGetWidth(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->width;
 }
 
-long glyphMetricsGetHeight(long glyphMetrics) {
+long glyphMetricsGetHeight(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->height;
 }
 
-long glyphMetricsGetHoriAdvance(long glyphMetrics) {
+long glyphMetricsGetHoriAdvance(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->horiAdvance;
 }
 
-long glyphMetricsGetVertAdvance(long glyphMetrics) {
+long glyphMetricsGetVertAdvance(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->vertAdvance;
 }
 
-long glyphMetricsGetHoriBearingX(long glyphMetrics) {
+long glyphMetricsGetHoriBearingX(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->horiBearingX;
 }
 
-long glyphMetricsGetHoriBearingY(long glyphMetrics) {
+long glyphMetricsGetHoriBearingY(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->horiBearingY;
 }
 
-long glyphMetricsGetVertBearingX(long glyphMetrics) {
+long glyphMetricsGetVertBearingX(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->vertBearingX;
 }
 
-long glyphMetricsGetVertBearingY(long glyphMetrics) {
+long glyphMetricsGetVertBearingY(const long glyphMetrics) {
   return reinterpret_cast<FT_Glyph_Metrics *>(glyphMetrics)->vertBearingY;
 }
 
-unsigned int bitmapGetWidth(long bitmap) {
+unsigned int bitmapGetWidth(const long bitmap) {
   return reinterpret_cast<FT_Bitmap *>(bitmap)->width;
 }
 
-unsigned int bitmapGetRows(long bitmap) {
+unsigned int bitmapGetRows(const long bitmap) {
   return reinterpret_cast<FT_Bitmap *>(bitmap)->rows;
 }
 
-int bitmapGetPitch(long bitmap) {
+int bitmapGetPitch(const long bitmap) {
   return reinterpret_cast<FT_Bitmap *>(bitmap)->pitch;
 }
 
-unsigned short bitmapGetNumGrays(long bitmap) {
+unsigned short bitmapGetNumGrays(const long bitmap) {
   return reinterpret_cast<FT_Bitmap *>(bitmap)->num_grays;
 }
 
-unsigned char bitmapGetPaletteMode(long bitmap) {
+unsigned char bitmapGetPaletteMode(const long bitmap) {
   return reinterpret_cast<FT_Bitmap *>(bitmap)->palette_mode;
 }
 
-unsigned char bitmapGetPixelMode(long bitmap) {
+unsigned char bitmapGetPixelMode(const long bitmap) {
   return reinterpret_cast<FT_Bitmap *>(bitmap)->pixel_mode;
 }
 
 // Returns a pointer to the buffer
-UCharArray bitmapGetBuffer(long bitmap) {
+UCharArray bitmapGetBuffer(const long bitmap) {
   const auto *bmp = reinterpret_cast<FT_Bitmap *>(bitmap);
   const auto size = static_cast<int>(bmp->rows * bmp->width * abs(bmp->pitch));
   return UCharArray{bmp->buffer, size};
 }
 
-int getCharMapIndex(long charMap) {
+int getCharMapIndex(const long charMap) {
   return FT_Get_Charmap_Index(reinterpret_cast<FT_CharMap>(charMap));
 }

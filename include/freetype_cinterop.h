@@ -15,8 +15,8 @@ extern "C" {
 #endif
 
 typedef struct {
-  unsigned char *ptr;
-  int length;
+    unsigned char *ptr;
+    int length;
 } UCharArray;
 
 long init();
@@ -27,7 +27,7 @@ bool doneFreeType(long library);
 int *libraryVersion(long library);
 
 // ---- Face
-long newMemoryFace(long library, const char *data, int length, long faceIndex);
+long newMemoryFace(long library, char *data, int length, long faceIndex);
 
 bool loadMathTable(long face, char *data, int length);
 
