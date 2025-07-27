@@ -160,7 +160,7 @@ else ()
 endif ()
 
 
-project(freetype C)
+project(freetype C CXX)
 
 set(VERSION_MAJOR "2")
 set(VERSION_MINOR "13")
@@ -377,7 +377,7 @@ if (NOT (ORIGINAL_FTOPTION_H STREQUAL FTOPTION_H))
 endif ()
 
 
-file(GLOB PUBLIC_HEADERS "include/ft2build.h" "include/freetype/*.h")
+file(GLOB PUBLIC_HEADERS "include/ft2build.h" "include/freetype_cinterop.h" "include/freetype/*.h")
 file(GLOB PUBLIC_CONFIG_HEADERS "include/freetype/config/*.h")
 file(GLOB PRIVATE_HEADERS "include/freetype/internal/*.h")
 
@@ -423,6 +423,7 @@ set(BASE_SRCS
   src/type1/type1.c
   src/type42/type42.c
   src/winfonts/winfnt.c
+  src/freetype.cpp
 )
 
 if (WIN32)

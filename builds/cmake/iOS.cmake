@@ -28,7 +28,7 @@
 #     OS - the default, used to build for iPhone and iPad physical devices,
 #       which have an ARM architecture.
 #     SIMULATOR - used to build for the Simulator platforms, which have an
-#       x86 architecture.
+#       x86/arm64 architecture.
 #
 #   CMAKE_IOS_DEVELOPER_ROOT = /path/to/platform/Developer folder
 #
@@ -63,6 +63,8 @@
 #     iOS environment.  Thanks to the `android-cmake' project for providing
 #     the command.
 
+# Set CMake policy for compatibility
+cmake_policy(SET CMP0153 NEW)
 
 # standard settings
 set(CMAKE_SYSTEM_NAME Darwin)
@@ -80,7 +82,12 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET ""
 # SDKs
 find_program(CMAKE_UNAME uname /bin /usr/bin /usr/local/bin)
 if (CMAKE_UNAME)
-  exec_program(uname ARGS -r OUTPUT_VARIABLE CMAKE_HOST_SYSTEM_VERSION)
+  # Use execute_process instead of deprecated exec_program
+  execute_process(
+    COMMAND uname -r
+    OUTPUT_VARIABLE CMAKE_HOST_SYSTEM_VERSION
+    OUTPUT_STRIP_TRAILING_WHITESPACE
+  )
   string(REGEX REPLACE "^([0-9]+)\\.([0-9]+).*$" "\\1"
     DARWIN_MAJOR_VERSION "${CMAKE_HOST_SYSTEM_VERSION}")
 endif (CMAKE_UNAME)
@@ -210,17 +217,19 @@ set(CMAKE_OSX_SYSROOT ${CMAKE_IOS_SDK_ROOT}
   CACHE PATH "Sysroot used for iOS support"
 )
 
-# set the architecture for iOS --
-# note that currently both ARCHS_STANDARD_32_BIT and
-# ARCHS_UNIVERSAL_IPHONE_OS set armv7 only, so set both manually
+# set the architecture for iOS
+# Updated to support modern iOS architectures
 if (${IOS_PLATFORM} STREQUAL "OS")
-  set(IOS_ARCH $(ARCHS_STANDARD_32_64_BIT))
+  # For iOS devices, use arm64 (and arm64e if needed)
+  set(IOS_ARCH "arm64")
 else (${IOS_PLATFORM} STREQUAL "OS")
-  set(IOS_ARCH i386)
+  # For iOS simulator, let Xcode choose the appropriate architecture
+  # This will be arm64 on Apple Silicon Macs and x86_64 on Intel Macs
+  set(IOS_ARCH "$(ARCHS_STANDARD)")
 endif (${IOS_PLATFORM} STREQUAL "OS")
 
 set(CMAKE_OSX_ARCHITECTURES ${IOS_ARCH}
-  CACHE string "Build architecture for iOS"
+  CACHE STRING "Build architecture for iOS"
 )
 
 # set the find root to the iOS developer roots and to user defined paths
@@ -228,7 +237,7 @@ set(CMAKE_FIND_ROOT_PATH
   ${CMAKE_IOS_DEVELOPER_ROOT}
   ${CMAKE_IOS_SDK_ROOT}
   ${CMAKE_PREFIX_PATH}
-  CACHE string  "iOS find search path root"
+  CACHE STRING "iOS find search path root"
 )
 
 # default to searching for frameworks first

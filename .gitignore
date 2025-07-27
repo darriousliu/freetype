@@ -5,3 +5,9 @@ src/dlg/dlg.c
 subprojects/*
 !subprojects/*.wrap
 /tests/data/*
+
+# CLion .idea files
+.idea
+# iOS build
+build_*
+output
