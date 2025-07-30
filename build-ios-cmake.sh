@@ -27,6 +27,7 @@ buildit_cmake()
 
     BUILD_DIR="$pwd/build_${arch}_${PLATFORM_NAME}"
     rm -rf "$BUILD_DIR"
+    export CXXFLAGS="-std=c++23"
 
     cmake -S . -B "$BUILD_DIR" -G Xcode \
         -DCMAKE_TOOLCHAIN_FILE="$pwd/builds/cmake/iOS.cmake" \
