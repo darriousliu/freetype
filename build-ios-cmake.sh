@@ -62,6 +62,8 @@ buildit_cmake "SIMULATOR" "x86_64" "iOS Simulator (x86_64)"
 
 # Merge libraries
 echo "Creating universal library..."
+ls "$pwd/output/arm64/iPhoneOS/lib"
+ls "$pwd/output/x86_64/iPhoneSimulator/lib"
 DEVICE_LIB="$pwd/output/arm64/iPhoneOS/lib/$LIBNAME.a"
 SIM_LIB="$pwd/output/x86_64/iPhoneSimulator/lib/$LIBNAME.a"
 
