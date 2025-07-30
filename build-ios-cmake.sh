@@ -9,6 +9,8 @@ pwd=$(pwd)
 
 # 读取参数
 BUILD_TYPE=${1:-Release}
+XCODE_NAME=${2:-"Xcode"}
+IOS_SDK_VERSION=${3:-"18.5"}
 
 buildit_cmake()
 {
@@ -32,6 +34,8 @@ buildit_cmake()
     cmake -S . -B "$BUILD_DIR" -G Xcode \
         -DCMAKE_TOOLCHAIN_FILE="$pwd/builds/cmake/iOS.cmake" \
         -DIOS_PLATFORM="$ios_platform" \
+        -DCMAKE_IOS_DEVELOPER_ROOT="/Applications/$XCODE_NAME.app/Contents/Developer/Platforms/$PLATFORM_NAME.platform/Developer" \
+        -DCMAKE_IOS_SDK_ROOT="/Applications/$XCODE_NAME.app/Contents/Developer/Platforms/$PLATFORM_NAME.platform/Developer/SDKs/$PLATFORM_NAME.sdk" \
         -DCMAKE_OSX_ARCHITECTURES="$arch" \
         -DCMAKE_BUILD_TYPE="$BUILD_TYPE" \
         -DBUILD_SHARED_LIBS=OFF \
