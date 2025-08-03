@@ -19,7 +19,7 @@ typedef struct {
     int length;
 } UCharArray;
 
-long init();
+long initLibrary();
 
 bool doneFreeType(long library);
 

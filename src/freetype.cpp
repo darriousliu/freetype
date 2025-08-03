@@ -6,7 +6,7 @@
 #include "freetype/internal/ftobjs.h"
 
 
-extern "C" long init() {
+extern "C" long initLibrary() {
   FT_Library library;
   if (FT_Init_FreeType(&library)) {
     return 0; // Error initializing FreeType
