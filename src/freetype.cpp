@@ -416,7 +416,7 @@ unsigned char bitmapGetPixelMode(const long bitmap) {
 // Returns a pointer to the buffer
 UCharArray bitmapGetBuffer(const long bitmap) {
   const auto *bmp = reinterpret_cast<FT_Bitmap *>(bitmap);
-  const auto size = static_cast<int>(bmp->rows * bmp->width * abs(bmp->pitch));
+  const auto size = static_cast<int>(bmp->rows * abs(bmp->pitch));
   return UCharArray{reinterpret_cast<char *>(bmp->buffer), size};
 }
 
