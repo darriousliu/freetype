@@ -304,7 +304,7 @@ long sizeMetricsGetXScale(const long sizeMetrics) {
   return reinterpret_cast<FT_Size_Metrics *>(sizeMetrics)->x_scale;
 }
 
-long sizeMetricsGetYPPEM(const long sizeMetrics) {
+int sizeMetricsGetYPPEM(const long sizeMetrics) {
   return reinterpret_cast<FT_Size_Metrics *>(sizeMetrics)->y_ppem;
 }
 

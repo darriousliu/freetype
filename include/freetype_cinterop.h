@@ -124,7 +124,7 @@ int sizeMetricsGetXPPEM(long sizeMetrics);
 
 long sizeMetricsGetXScale(long sizeMetrics);
 
-long sizeMetricsGetYPPEM(long sizeMetrics);
+int sizeMetricsGetYPPEM(long sizeMetrics);
 
 long sizeMetricsGetYScale(long sizeMetrics);
 
