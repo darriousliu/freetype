@@ -9,14 +9,14 @@
 #include <stdbool.h>
 #endif
 
-#endif  // FREETYPE_CINTEROP_H
+#endif // FREETYPE_CINTEROP_H
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef struct {
-    char *ptr;
-    int length;
+  char *ptr;
+  int length;
 } UCharArray;
 
 long initLibrary();
@@ -28,6 +28,8 @@ int *libraryVersion(long library);
 
 // ---- Face
 long newMemoryFace(long library, char *data, int length, long faceIndex);
+
+FT_ULong getMathTableLength(long face);
 
 bool loadMathTable(long face, char *data, int length);
 
@@ -62,7 +64,7 @@ int faceGetUnderlineThickness(long face);
 int faceGetUnitsPerEM(long face);
 
 long faceGetGlyph(long face); // Pointer to FT_GlyphSlot
-long faceGetSize(long face); // Pointer to FT_Size
+long faceGetSize(long face);  // Pointer to FT_Size
 long getTrackKerning(long face, int pointSize, int degree);
 
 // Returns an array with [x, y] coordinates
@@ -96,10 +98,10 @@ unsigned short getFSTypeFlags(long face);
 
 bool selectSize(long face, int strikeIndex);
 
-bool loadChar(long face, int c, int flags);
+bool loadChar(long face, int char_id, int flags);
 
-bool requestSize(long face, int width, int height,
-                 int horizResolution, int vertResolution, int type);
+bool requestSize(long face, int width, int height, int horizResolution,
+                 int vertResolution, int type);
 
 bool setPixelSizes(long face, int width, int height);
 
@@ -142,7 +144,7 @@ int glyphSlotGetBitmapLeft(long glyphSlot);
 
 int glyphSlotGetBitmapTop(long glyphSlot);
 
-long glyphSlotGetBitmap(long glyphSlot); // Pointer to FT_Bitmap
+long glyphSlotGetBitmap(long glyphSlot);  // Pointer to FT_Bitmap
 long glyphSlotGetMetrics(long glyphSlot); // Pointer to FT_Glyph_Metrics
 bool renderGlyph(long glyphSlot, int renderMode);
 
@@ -180,7 +182,6 @@ UCharArray bitmapGetBuffer(long bitmap); // Returns a pointer to the buffer
 
 // ---- Charmap
 int getCharMapIndex(long charMap);
-
 
 #ifdef __cplusplus
 }

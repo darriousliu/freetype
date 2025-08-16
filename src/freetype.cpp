@@ -1,14 +1,13 @@
-#include "freetype_cinterop.h"
 #include "freetype/freetype.h"
+#include "freetype_cinterop.h"
 
+#include "freetype/internal/ftobjs.h"
 #include "freetype/tttables.h"
 #include "freetype/tttags.h"
-#include "freetype/internal/ftobjs.h"
-
 
 extern "C" long initLibrary() {
   FT_Library library;
-  if (FT_Init_FreeType(&library)) {
+  if (FT_Init_FreeType(&library) != FT_Err_Ok) {
     return 0; // Error initializing FreeType
   }
   return reinterpret_cast<long>(library);
@@ -18,16 +17,18 @@ extern "C" bool doneFreeType(const long library) {
   if (library == 0) {
     return false; // Invalid library handle
   }
-  return FT_Done_FreeType(reinterpret_cast<FT_Library>(library));
+  return FT_Done_FreeType(reinterpret_cast<FT_Library>(library)) == FT_Err_Ok;
 }
 
 extern "C" int *libraryVersion(const long library) {
   if (library == 0) {
     return nullptr; // Invalid library handle
   }
-  int major, minor, patch;
-  const auto libraryVersion = new int[3];
-  const auto ftLibrary = reinterpret_cast<FT_Library>(library);
+  int major;
+  int minor;
+  int patch;
+  auto *const libraryVersion = new int[3];
+  auto *const ftLibrary = reinterpret_cast<FT_Library>(library);
   FT_Library_Version(ftLibrary, &major, &minor, &patch);
   libraryVersion[0] = major;
   libraryVersion[1] = minor;
@@ -35,14 +36,14 @@ extern "C" int *libraryVersion(const long library) {
   return libraryVersion;
 }
 
-extern "C" long newMemoryFace(const long library, char *data,
-                              const int length, const long faceIndex) {
+extern "C" long newMemoryFace(const long library, char *data, const int length,
+                              const long faceIndex) {
   if (library == 0 || data == nullptr || length <= 0) {
     // 输出原因
     printf("Invalid parameters");
     return 0; // Invalid parameters
   }
-  const auto ftLibrary = reinterpret_cast<FT_Library>(library);
+  auto *const ftLibrary = reinterpret_cast<FT_Library>(library);
   const auto *header = reinterpret_cast<const FT_Byte *>(data);
 
   printf("Font signature: %c%c%c%c\n", header[0], header[1], header[2],
@@ -55,19 +56,28 @@ extern "C" long newMemoryFace(const long library, char *data,
   printf("FT_New_Memory_Face returned: %d\n", error);
 
   printf("Face loaded successfully: %s - %s\n",
-         face->family_name ? face->family_name : "Unknown",
-         face->style_name ? face->style_name : "Unknown");
+         face->family_name != nullptr ? face->family_name : "Unknown",
+         face->style_name != nullptr ? face->style_name : "Unknown");
 
   return reinterpret_cast<long>(face);
 }
 
+extern "C" FT_ULong getMathTableLength(const long face) {
+  FT_ULong t_length = 0;
+  const auto error = FT_Load_Sfnt_Table(reinterpret_cast<FT_Face>(face),
+                                        TTAG_MATH, 0, nullptr, &t_length);
+  if (error == FT_Err_Ok) {
+    return t_length;
+  }
+  return 0;
+}
+
 extern "C" bool loadMathTable(const long face, char *data, const int length) {
   FT_ULong t_length = length;
-  const auto result = FT_Load_Sfnt_Table(reinterpret_cast<FT_Face>(face),
-                                         TTAG_MATH, 0,
-                                         reinterpret_cast<FT_Byte *>(data),
-                                         &t_length);
-  return result;
+  const auto result =
+      FT_Load_Sfnt_Table(reinterpret_cast<FT_Face>(face), TTAG_MATH, 0,
+                         reinterpret_cast<FT_Byte *>(data), &t_length);
+  return result == FT_Err_Ok;
 }
 
 int faceGetAscender(const long face) {
@@ -87,7 +97,7 @@ long faceGetFaceIndex(const long face) {
 }
 
 char *faceGetFamilyName(const long face) {
-  const auto familyName = reinterpret_cast<FT_Face>(face)->family_name;
+  auto *const familyName = reinterpret_cast<FT_Face>(face)->family_name;
   return familyName;
 }
 
@@ -116,7 +126,7 @@ long faceGetStyleFlags(const long face) {
 }
 
 const char *faceGetStyleName(const long face) {
-  const auto styleName = reinterpret_cast<FT_Face>(face)->style_name;
+  auto *const styleName = reinterpret_cast<FT_Face>(face)->style_name;
   return styleName;
 }
 
@@ -145,8 +155,9 @@ long faceGetSize(const long face) {
 long getTrackKerning(const long face, const int pointSize, const int degree) {
   long kern;
   if (FT_Get_Track_Kerning(reinterpret_cast<FT_Face>(face), pointSize, degree,
-                           &kern) != 0)
+                           &kern) != 0) {
     return 0;
+  }
   return kern;
 }
 
@@ -155,27 +166,27 @@ long *getKerning(const long face, const int left, const int right,
   FT_Vector vector;
   long x = 0;
   long y = 0;
-  if (!FT_Get_Kerning(reinterpret_cast<FT_Face>(face), left, right, mode,
-                      &vector)) {
+  if (FT_Get_Kerning(reinterpret_cast<FT_Face>(face), left, right, mode,
+                     &vector) == FT_Err_Ok) {
     x = vector.x;
     y = vector.y;
   }
-  const auto kerning = new long[2];
+  auto *const kerning = new long[2];
   kerning[0] = x;
   kerning[1] = y;
   return kerning;
 }
 
 bool doneFace(const long face) {
-  return FT_Done_Face(reinterpret_cast<FT_Face>(face));
+  return FT_Done_Face(reinterpret_cast<FT_Face>(face)) == FT_Err_Ok;
 }
 
 bool referenceFace(const long face) {
-  return FT_Reference_Face(reinterpret_cast<FT_Face>(face));
+  return FT_Reference_Face(reinterpret_cast<FT_Face>(face)) == FT_Err_Ok;
 }
 
 bool hasKerning(const long face) {
-  return FT_HAS_KERNING(reinterpret_cast<FT_Face>(face));
+  return FT_HAS_KERNING(reinterpret_cast<FT_Face>(face)) == FT_Err_Ok;
 }
 
 const char *getPostscriptName(const long face) {
@@ -184,34 +195,32 @@ const char *getPostscriptName(const long face) {
 
 bool selectCharMap(const long face, int encoding) {
   return FT_Select_Charmap(reinterpret_cast<FT_Face>(face),
-                           static_cast<FT_Encoding>(encoding));
-
+                           static_cast<FT_Encoding>(encoding)) == FT_Err_Ok;
 }
 
 // Pointer to FT_CharMap
 bool setCharMap(const long face, const long charMap) {
   return FT_Set_Charmap(reinterpret_cast<FT_Face>(face),
-                        reinterpret_cast<FT_CharMap>(charMap));
-
+                        reinterpret_cast<FT_CharMap>(charMap)) == FT_Err_Ok;
 }
 
 bool faceCheckTrueTypePatents(const long face) {
-  return FT_Face_CheckTrueTypePatents(reinterpret_cast<FT_Face>(face));
-
+  return FT_Face_CheckTrueTypePatents(reinterpret_cast<FT_Face>(face)) ==
+         FT_Err_Ok;
 }
 
 bool faceSetUnpatentedHinting(const long face, const bool value) {
-  return FT_Face_SetUnpatentedHinting(reinterpret_cast<FT_Face>(face), value);
-
+  return FT_Face_SetUnpatentedHinting(reinterpret_cast<FT_Face>(face), value) ==
+         FT_Err_Ok;
 }
 
 // Returns an array with [charcode, glyphIndex]
 unsigned long *getFirstChar(const long face) {
   FT_UInt gindex;
-  const FT_ULong charcode = FT_Get_First_Char(reinterpret_cast<FT_Face>(face),
-                                        &gindex);
+  const FT_ULong charcode =
+      FT_Get_First_Char(reinterpret_cast<FT_Face>(face), &gindex);
 
-  const auto result = new unsigned long[2];
+  auto *const result = new unsigned long[2];
   result[0] = charcode;
   result[1] = gindex;
 
@@ -229,7 +238,8 @@ unsigned int getCharIndex(const long face, const int code) {
 }
 
 unsigned int getNameIndex(const long face, const char *name) {
-  const auto glyphIndex = FT_Get_Name_Index(reinterpret_cast<FT_Face>(face), name);
+  const auto glyphIndex =
+      FT_Get_Name_Index(reinterpret_cast<FT_Face>(face), name);
   return glyphIndex;
 }
 
@@ -238,11 +248,13 @@ unsigned short getFSTypeFlags(const long face) {
 }
 
 bool selectSize(const long face, const int strikeIndex) {
-  return FT_Select_Size(reinterpret_cast<FT_Face>(face), strikeIndex);
+  return FT_Select_Size(reinterpret_cast<FT_Face>(face), strikeIndex) ==
+         FT_Err_Ok;
 }
 
-bool loadChar(const long face, const int c, const int flags) {
-  return FT_Load_Char(reinterpret_cast<FT_Face>(face), c, flags);
+bool loadChar(const long face, const int char_id, const int flags) {
+  return FT_Load_Char(reinterpret_cast<FT_Face>(face), char_id, flags) ==
+         FT_Err_Ok;
 }
 
 bool requestSize(const long face, const int width, const int height,
@@ -256,24 +268,24 @@ bool requestSize(const long face, const int width, const int height,
   req.vertResolution = vertResolution;
   req.type = static_cast<FT_Size_Request_Type>(type);
 
-  return FT_Request_Size(reinterpret_cast<FT_Face>(face), &req);
+  return FT_Request_Size(reinterpret_cast<FT_Face>(face), &req) == FT_Err_Ok;
 }
 
 bool setPixelSizes(const long face, const int width, const int height) {
-  return FT_Set_Pixel_Sizes(reinterpret_cast<FT_Face>(face), width, height);
+  return FT_Set_Pixel_Sizes(reinterpret_cast<FT_Face>(face), width, height) ==
+         FT_Err_Ok;
 }
 
 bool loadGlyph(const long face, const int glyphIndex, const int loadFlags) {
-  return FT_Load_Glyph(reinterpret_cast<FT_Face>(face), glyphIndex, loadFlags);
+  return FT_Load_Glyph(reinterpret_cast<FT_Face>(face), glyphIndex,
+                       loadFlags) == FT_Err_Ok;
 }
 
 bool setCharSize(const long face, const int charWidth, const int charHeight,
-                 const int horizResolution,
-                 const int vertResolution) {
+                 const int horizResolution, const int vertResolution) {
   return FT_Set_Char_Size(reinterpret_cast<FT_Face>(face), charWidth,
-                          charHeight,
-                          horizResolution,
-                          vertResolution);
+                          charHeight, horizResolution,
+                          vertResolution) == FT_Err_Ok;
 }
 
 long sizeGetMetrics(const long size) {
@@ -342,19 +354,19 @@ int glyphSlotGetBitmapTop(const long glyphSlot) {
 
 // Pointer to FT_Bitmap
 long glyphSlotGetBitmap(const long glyphSlot) {
-  return reinterpret_cast<long>(&reinterpret_cast<FT_GlyphSlot>(glyphSlot)->
-    bitmap);
+  return reinterpret_cast<long>(
+      &reinterpret_cast<FT_GlyphSlot>(glyphSlot)->bitmap);
 }
 
 // Pointer to FT_Glyph_Metrics
 long glyphSlotGetMetrics(const long glyphSlot) {
-  return reinterpret_cast<long>(&reinterpret_cast<FT_GlyphSlot>(glyphSlot)->
-    metrics);
+  return reinterpret_cast<long>(
+      &reinterpret_cast<FT_GlyphSlot>(glyphSlot)->metrics);
 }
 
 bool renderGlyph(const long glyphSlot, int renderMode) {
   return FT_Render_Glyph(reinterpret_cast<FT_GlyphSlot>(glyphSlot),
-                         static_cast<FT_Render_Mode>(renderMode));
+                         static_cast<FT_Render_Mode>(renderMode)) == FT_Err_Ok;
 }
 
 long glyphMetricsGetWidth(const long glyphMetrics) {
